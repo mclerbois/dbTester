@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <title>Techniques informatiques - base de données - TP7</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+
+  <style>
+    body {
+      background-color: #f1f5f8;
+    }
+
+    .accordion {
+      background-color: #eee;
+      color: #444;
+      cursor: pointer;
+      padding: 18px;
+      width: 100%;
+      text-align: left;
+      border: none;
+      outline: none;
+      transition: 0.4s;
+    }
+
+    /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+    .active,
+    .accordion:hover {
+      background-color: #ccc;
+    }
+
+    /* Style the accordion panel. Note: hidden by default */
+    .panel {
+      padding: 0 18px;
+      background-color: white;
+      display: none;
+      overflow: hidden;
+    }
+  </style>
+  <script src="js/alasql.js"></script>
+  <script src="js/vue.js"></script>
+</head>
+
+<body onload="setup();">
+  <button class="accordion">Base de donnnées</button>
+  <div class="panel">
+    <div id="appDB">
+      <p>Nombre de base de données <span>{{ndb}}</span></p>
+      <ul>
+        <li v-for="db in dbList"><button @click="killDB(db)">&#9986</button> {{db}}
+          <input type="radio" id="db" :value="db" v-model="dbSelected" @click="select(db)">
+        </li>
+      </ul>
+      <div>
+        <hr>
+        <p>Base de données {{dbSelected}}</p>
+        <p>Liste des tables</p>
+        <ul>
+          <li v-for="tab in tables"> {{tab}}
+            <input type="radio" id="tab" :value="tab" v-model="tabSelected" @click="selectTab(tab)">
+          </li>
+
+        </ul>
+      </div>
+
+      <p><textarea id="sqlText" v-model="sqlTxt" style="width: 100%;height: auto;"></textarea></p>
+      <button @click="doSqlTxt">Exécuter le script</button></p>
+
+      <p><label>Query</label>
+        <button @click="doSqlStr">Exécuter la commande SQL</button>
+        <input style="width: 80%;" v-model="sqlString" />
+      </p>
+<hr>
+      <p><button @click="killAllDB">
+          Effacer toutes les bases de données
+        </button></p>
+    </div>
+  </div>
+
+  <button class="accordion">Erreurs</button>
+  <div class="panel">
+    <button onclick="document.getElementById('error').innerHTML=''">Clear</button>
+    <pre id="error" style="color:red;"></pre>
+  </div>
+
+  <button class="accordion">Console javascript</button>
+  <div class="panel">
+    <button onclick="document.getElementById('log').innerHTML=''">Clear</button>
+    <pre id="log"></pre>
+  </div>
+
+  <script>
+
+    (function () {
+      var old = console.log;
+
+      console.log = function () {
+        var logger = document.getElementById("log");
+        for (var i = 0; i < arguments.length; i++) {
+          if (typeof arguments[i] == "object") {
+            logger.innerHTML +=
+              (JSON && JSON.stringify
+                ? JSON.stringify(arguments[i], undefined, 2)
+                : arguments[i]) + "<br />";
+          } else {
+            logger.innerHTML += arguments[i] + "<br />";
+          }
+        }
+      };
+
+      console.error = function () {
+        var logger = document.getElementById("error");
+        for (var i = 0; i < arguments.length; i++) {
+          if (typeof arguments[i] == "object") {
+            logger.innerHTML +=
+              (JSON && JSON.stringify
+                ? JSON.stringify(arguments[i], undefined, 2)
+                : arguments[i]) + "<br />";
+          } else {
+            logger.innerHTML += arguments[i] + "<br />";
+          }
+        }
+      };
+
+      var acc = document.getElementsByClassName("accordion");
+      for (var i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function () {
+          this.classList.toggle("active");
+          var panel = this.nextElementSibling;
+          if (panel.style.display === "block") {
+            panel.style.display = "none";
+          } else {
+            panel.style.display = "block";
+          }
+        });
+        acc[i].click();
+      }
+    })();
+
+    var echo = console.log;
+  </script>
+
+  <script src="lesvues.js"></script>
+  <script>
+    function setup() {
+      appDB.init();
+      var el = document.getElementById("sqlText");
+      var t = el._value.split("\n");
+      el.style.cssText = "width:100%;height: " + t.length * 16 + "px";
+      el.addEventListener("keydown", autosize);
+      function autosize() {
+        var el = this;
+        setTimeout(function () {
+          var t = el._value.split("\n");
+          el.style.cssText = "width:100%;height: " + t.length * 16 + "px";
+        }, 0);
+      }
+    }
+
+  </script>
+</body>
+
+</html>
